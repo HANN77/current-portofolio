@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -33,6 +33,15 @@ const skillsRow2 = [
 ];
 
 function SkillPill({ name, icon }: { name: string; icon: string }) {
+  // Use a pseudo-random rotation based on the skill name so it's consistent across renders
+  const rotation = useMemo(() => {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return (Math.abs(hash) % 40) / 10 - 2;
+  }, [name]);
+
   return (
     <motion.div
       whileHover={{
@@ -41,7 +50,7 @@ function SkillPill({ name, icon }: { name: string; icon: string }) {
       }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
       className="inline-flex items-center gap-3 px-6 py-3 mx-3 rounded-full border border-[var(--warm-300)] bg-[var(--surface-elevated)] hover:bg-white select-none"
-      style={{ transform: `rotate(${(Math.random() - 0.5) * 4}deg)` }}
+      style={{ transform: `rotate(${rotation}deg)` }}
       data-cursor="pointer"
       onMouseEnter={() => usePortfolioStore.getState().setCursorVariant("pointer")}
       onMouseLeave={() => usePortfolioStore.getState().setCursorVariant("default")}

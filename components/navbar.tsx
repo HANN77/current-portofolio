@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -102,6 +102,27 @@ export default function Navbar() {
   };
 
   const activeIndex = navLinks.findIndex((l) => l.href === `#${activeSection}`);
+  const linkRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number } | null>(null);
+
+  const updatePillPosition = useCallback(() => {
+    if (activeIndex >= 0 && linkRefs.current[activeIndex]) {
+      const el = linkRefs.current[activeIndex]!;
+      setPillStyle({ left: el.offsetLeft, width: el.offsetWidth });
+    } else {
+      setPillStyle(null);
+    }
+  }, [activeIndex]);
+
+  useEffect(() => {
+    updatePillPosition();
+  }, [updatePillPosition]);
+
+  // Also recalculate on window resize in case layout shifts
+  useEffect(() => {
+    window.addEventListener("resize", updatePillPosition);
+    return () => window.removeEventListener("resize", updatePillPosition);
+  }, [updatePillPosition]);
 
   return (
     <>
@@ -134,14 +155,14 @@ export default function Navbar() {
 
           {/* Desktop Links with pill indicator */}
           <div ref={linksRef} className="hidden md:flex items-center gap-1 relative">
-            {/* Sliding pill */}
-            {activeIndex >= 0 && (
+            {/* Sliding pill — dynamically positioned */}
+            {pillStyle && (
               <motion.div
                 className="absolute h-8 bg-foreground/[0.04] rounded-full"
                 layoutId="navPill"
                 style={{
-                  left: `${activeIndex * 96}px`,
-                  width: "88px",
+                  left: `${pillStyle.left}px`,
+                  width: `${pillStyle.width}px`,
                 }}
                 transition={{
                   type: "spring",
@@ -151,9 +172,10 @@ export default function Navbar() {
               />
             )}
 
-            {navLinks.map((link) => (
+            {navLinks.map((link, i) => (
               <div
                 key={link.name}
+                ref={(el) => { linkRefs.current[i] = el; }}
                 className="nav-link opacity-0 relative z-10 px-4 py-1.5"
               >
                 <FlipLink onClick={() => handleNavClick(link.href)}>

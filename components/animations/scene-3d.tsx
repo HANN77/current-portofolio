@@ -61,11 +61,19 @@ function FloatingShape({
 
 function Particles({ count = 50 }: { count?: number }) {
   const points = useMemo(() => {
+    // Math.random() is technically impure, but React allows it in useMemo 
+    // since we only want to generate positions once. However, to strictly satisfy ESLint or React Compiler rules,
+    // we use a seeded pseudo-random generator.
+    const seededRandom = (seed: number) => {
+        const x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    };
+
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+      positions[i * 3] = (seededRandom(i * 3) - 0.5) * 20;
+      positions[i * 3 + 1] = (seededRandom(i * 3 + 1) - 0.5) * 20;
+      positions[i * 3 + 2] = (seededRandom(i * 3 + 2) - 0.5) * 10;
     }
     return positions;
   }, [count]);
@@ -83,9 +91,7 @@ function Particles({ count = 50 }: { count?: number }) {
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          array={points}
-          count={count}
-          itemSize={3}
+          args={[points, 3]}
         />
       </bufferGeometry>
       <pointsMaterial size={0.03} color="#cbd5e1" transparent opacity={0.5} sizeAttenuation />
