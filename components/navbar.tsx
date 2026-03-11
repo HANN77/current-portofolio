@@ -124,91 +124,123 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", updatePillPosition);
   }, [updatePillPosition]);
 
+  // Recalculate pill position after scrolled state changes (navbar layout shift)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      updatePillPosition();
+    }, 550); // slightly longer than the 500ms navbar transition
+    return () => clearTimeout(timeout);
+  }, [scrolled, updatePillPosition]);
+
   return (
     <>
-      <nav
-        ref={navRef}
-        className={`fixed z-50 transition-all duration-500 ${
-          scrolled
-            ? "top-4 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-4xl py-2.5 px-6 bg-[#f8f7f4] shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] rounded-full"
-            : "top-0 left-0 right-0 py-6 px-8 bg-transparent"
-        }`}
-      >
-        <div className={`${scrolled ? "" : "max-w-6xl mx-auto"} flex items-center justify-between`}>
-          {/* Logo - letter by letter */}
-          <Magnetic strength={0.15}>
-            <a
-              ref={logoRef}
-              href="#"
-              className="text-base font-light tracking-[0.3em] uppercase text-foreground flex"
-              data-cursor="pointer"
-              onMouseEnter={() => usePortfolioStore.getState().setCursorVariant("pointer")}
-              onMouseLeave={() => usePortfolioStore.getState().setCursorVariant("default")}
-            >
-              {"Portfolio".split("").map((letter, i) => (
-                <span key={i} className="logo-letter opacity-0 inline-block">
-                  {letter}
-                </span>
-              ))}
-            </a>
-          </Magnetic>
-
-          {/* Desktop Links with pill indicator */}
-          <div ref={linksRef} className="hidden md:flex items-center gap-1 relative">
-            {/* Sliding pill — dynamically positioned */}
-            {pillStyle && (
-              <motion.div
-                className="absolute h-8 bg-foreground/[0.04] rounded-full"
-                layoutId="navPill"
-                style={{
-                  left: `${pillStyle.left}px`,
-                  width: `${pillStyle.width}px`,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 350,
-                  damping: 30,
-                }}
-              />
-            )}
-
-            {navLinks.map((link, i) => (
-              <div
-                key={link.name}
-                ref={(el) => { linkRefs.current[i] = el; }}
-                className="nav-link opacity-0 relative z-10 px-4 py-1.5"
+      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none flex justify-center px-6">
+        <motion.nav
+          ref={navRef}
+          layout
+          className="pointer-events-auto overflow-hidden whitespace-nowrap origin-center"
+          style={{
+            width: scrolled ? "896px" : "100%", // 56rem = 896px, fixed value is more stable for spring layout
+            maxWidth: "100%",
+          }}
+          animate={
+            scrolled
+              ? {
+                  y: 16,
+                  padding: "8px 24px",
+                  backgroundColor: "#f8f7f4",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)",
+                  borderRadius: 999,
+                }
+              : {
+                  y: 0,
+                  padding: "24px 32px",
+                  backgroundColor: "rgba(248, 247, 244, 0)",
+                  boxShadow: "0 0px 0px rgba(0,0,0,0)",
+                  borderRadius: 0,
+                }
+          }
+          transition={{
+            layout: { type: "spring", stiffness: 260, damping: 30 },
+            default: { type: "spring", stiffness: 260, damping: 30 }
+          }}
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between w-full">
+            {/* Logo - letter by letter */}
+            <Magnetic strength={0.15}>
+              <a
+                ref={logoRef}
+                href="#"
+                className="text-base font-light tracking-[0.3em] uppercase text-foreground flex shrink-0"
+                data-cursor="pointer"
+                onMouseEnter={() => usePortfolioStore.getState().setCursorVariant("pointer")}
+                onMouseLeave={() => usePortfolioStore.getState().setCursorVariant("default")}
               >
-                <FlipLink onClick={() => handleNavClick(link.href)}>
-                  {link.name}
-                </FlipLink>
-              </div>
-            ))}
-          </div>
+                {"Portfolio".split("").map((letter, i) => (
+                  <span key={i} className="logo-letter opacity-0 inline-block">
+                    {letter}
+                  </span>
+                ))}
+              </a>
+            </Magnetic>
 
-          {/* Mobile Toggle - Animated hamburger */}
-          <button
-            className="md:hidden relative z-50 w-8 h-8 flex flex-col items-center justify-center gap-1.5"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            data-cursor="pointer"
-          >
-            <motion.span
-              animate={mobileOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
-              className="block w-6 h-[1.5px] bg-foreground origin-center"
-              transition={{ duration: 0.3 }}
-            />
-            <motion.span
-              animate={mobileOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
-              className="block w-6 h-[1.5px] bg-foreground"
-              transition={{ duration: 0.2 }}
-            />
-            <motion.span
-              animate={mobileOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-              className="block w-6 h-[1.5px] bg-foreground origin-center"
-              transition={{ duration: 0.3 }}
-            />
-          </button>
-        </div>
-      </nav>
+            {/* Desktop Links with pill indicator */}
+            <div ref={linksRef} className="hidden md:flex items-center gap-1 relative ml-auto">
+              {/* Sliding pill — dynamically positioned */}
+              {pillStyle && (
+                <motion.div
+                  className="absolute h-8 bg-foreground/[0.04] rounded-full"
+                  layoutId="navPill"
+                  style={{
+                    left: `${pillStyle.left}px`,
+                    width: `${pillStyle.width}px`,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 350,
+                    damping: 30,
+                  }}
+                />
+              )}
+
+              {navLinks.map((link, i) => (
+                <div
+                  key={link.name}
+                  ref={(el) => { linkRefs.current[i] = el; }}
+                  className="nav-link opacity-0 relative z-10 px-4 py-1.5"
+                >
+                  <FlipLink onClick={() => handleNavClick(link.href)}>
+                    {link.name}
+                  </FlipLink>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Toggle - Animated hamburger */}
+            <button
+              className="md:hidden relative z-50 w-8 h-8 flex flex-col items-center justify-center gap-1.5 ml-auto shrink-0"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              data-cursor="pointer"
+            >
+              <motion.span
+                animate={mobileOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
+                className="block w-6 h-[1.5px] bg-foreground origin-center"
+                transition={{ duration: 0.3 }}
+              />
+              <motion.span
+                animate={mobileOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+                className="block w-6 h-[1.5px] bg-foreground"
+                transition={{ duration: 0.2 }}
+              />
+              <motion.span
+                animate={mobileOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                className="block w-6 h-[1.5px] bg-foreground origin-center"
+                transition={{ duration: 0.3 }}
+              />
+            </button>
+          </div>
+        </motion.nav>
+      </div>
 
       {/* Mobile Menu - Full screen overlay */}
       <AnimatePresence>
