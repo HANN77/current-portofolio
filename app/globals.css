@@ -1,26 +1,221 @@
 @import "tailwindcss";
 
+/* ============== Design Tokens ============== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f7f4;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #f8f7f4;
+  --secondary: #f0ede6;
+  --secondary-foreground: #111111;
+  --muted: #f3f1ec;
+  --muted-foreground: #666666;
+  --accent: #e8e4dc;
+  --accent-foreground: #111111;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8f7f4;
+  --border: #e0ddd5;
+  --input: #e0ddd5;
+  --ring: #111111;
+  --radius: 0.75rem;
+
+  /* Warm accents */
+  --surface-elevated: #ffffff;
+  --warm-100: #faf8f5;
+  --warm-200: #f5f0ea;
+  --warm-300: #ece5db;
+  --warm-400: #d4cdc3;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============== Base Styles ============== */
+* {
+  border-color: var(--border);
+  cursor: none !important;
+}
+
+html {
+  scroll-behavior: auto;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Noise texture for paper-like warmth */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ============== Gradient Orbs ============== */
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.gradient-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #ede9e3 0%, transparent 70%);
+  animation: orbDrift1 20s ease-in-out infinite;
+}
+
+.gradient-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #e0e7d8 0%, transparent 70%);
+  animation: orbDrift2 25s ease-in-out infinite;
+}
+
+.gradient-orb-3 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #e4dff0 0%, transparent 70%);
+  animation: orbDrift3 22s ease-in-out infinite;
+}
+
+@keyframes orbDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(80px, -50px) scale(1.1); }
+  66% { transform: translate(-40px, 60px) scale(0.95); }
+}
+
+@keyframes orbDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-60px, 40px) scale(1.05); }
+  66% { transform: translate(50px, -70px) scale(0.9); }
+}
+
+@keyframes orbDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, 60px) scale(1.08); }
+  66% { transform: translate(-70px, -30px) scale(0.92); }
+}
+
+/* ============== Section Backgrounds ============== */
+.section-warm {
+  background: linear-gradient(135deg, var(--warm-100), var(--warm-200));
+}
+
+.section-elevated {
+  background: var(--surface-elevated);
+}
+
+/* ============== Lenis Smooth Scroll ============== */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ============== Custom Scrollbar ============== */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--warm-400);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+
+/* ============== Selection ============== */
+::selection {
+  background: #111111;
+  color: #f8f7f4;
+}
+
+/* ============== Marquee ============== */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee {
+  animation: marquee var(--marquee-duration, 30s) linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse var(--marquee-duration, 30s) linear infinite;
+}
+
+.animate-marquee:hover,
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* ============== Mobile: restore default cursor ============== */
+@media (max-width: 768px) {
+  * {
+    cursor: auto !important;
+  }
 }
