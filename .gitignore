@@ -39,3 +39,6 @@
 # typescript
 /portfolio/*.tsbuildinfo
 /portfolio/next-env.d.ts
+
+# references
+reference.MD
