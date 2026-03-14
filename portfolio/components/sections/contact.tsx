@@ -22,12 +22,32 @@ export default function Contact() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate submission
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
+    
+    try {
+      const formData = new FormData(e.currentTarget);
+      const data = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        message: formData.get("message"),
+      };
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error("Failed to send message");
+      
+      if (formRef.current) formRef.current.reset();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -121,6 +141,7 @@ export default function Contact() {
                   Name
                 </label>
                 <Input
+                  name="name"
                   placeholder="Your name"
                   className="bg-transparent border-[var(--warm-300)] focus:border-foreground/30 rounded-lg h-12 text-sm font-light transition-colors duration-300"
                   required
@@ -138,6 +159,7 @@ export default function Contact() {
                 </label>
                 <Input
                   type="email"
+                  name="email"
                   placeholder="your@email.com"
                   className="bg-transparent border-border/50 focus:border-foreground/30 rounded-lg h-12 text-sm font-light transition-colors duration-300"
                   required
@@ -154,6 +176,7 @@ export default function Contact() {
                   Message
                 </label>
                 <Textarea
+                  name="message"
                   placeholder="Tell me about your project..."
                   rows={5}
                   className="bg-transparent border-[var(--warm-300)] focus:border-foreground/30 rounded-lg text-sm font-light resize-none transition-colors duration-300"
